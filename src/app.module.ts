@@ -5,13 +5,20 @@ import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { OrdersModule } from './orders/orders.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(`mongodb://localhost:27017`, {
-      user: 'root',
-      pass: 'example',
-      dbName: 'exampleUsers',
+    ConfigModule.forRoot(),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_URI'),
+        user: configService.get<string>('MONGODB_USER'),
+        pass: configService.get<string>('MONGODB_PASS'),
+        dbName: configService.get<string>('MONGODB_DATABASE'),
+      }),
+      inject: [ConfigService],
     }),
     UsersModule,
     ProductsModule,
